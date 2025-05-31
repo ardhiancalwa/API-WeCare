@@ -51,7 +51,7 @@ const hospitalValidation = [
 // Routes
 router.get(
   "/hospitals",
-  verifyAccessToken,
+  // verifyAccessToken,
   paginationValidation,
   validate,
   hospitalController.getAllHospitals
