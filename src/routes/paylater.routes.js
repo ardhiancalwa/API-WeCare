@@ -34,7 +34,7 @@ router.get(
       .withMessage("Invalid limit"),
   ],
   validate,
-  verifyAccessToken,
+  // verifyAccessToken,
   payLaterController.getAllPayLaters
 );
 

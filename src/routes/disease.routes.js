@@ -24,7 +24,7 @@ const diseaseValidation = [
 // Routes
 router.get(
   "/diseases",
-  verifyAccessToken,
+  // verifyAccessToken,
   paginationValidation,
   validate,
   diseaseController.getAllDiseases
