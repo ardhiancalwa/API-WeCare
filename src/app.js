@@ -52,6 +52,10 @@ app.use((req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 
+app.all("*", (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
 // Error handling middleware
 app.use(errorHandler);
 
