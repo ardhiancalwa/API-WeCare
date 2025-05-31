@@ -82,33 +82,60 @@ class HospitalChatbot:
         return hospitals
 
     def get_hospital_recommendations(self, main_complaint: str, examinations: List[str], 
-                                   hospitals: List[Dict], category: str = "terdekat",
-                                   user_location: Dict = None) -> Dict:
-        filtered_hospitals = self.filter_hospitals(hospitals, category, user_location)
-        prompt = self.create_hospital_prompt(main_complaint, examinations, filtered_hospitals, category)
-        
-        try:
-            response = self.llm.invoke(prompt)
-            response_text = response.content if hasattr(response, "content") else str(response)
+                               hospitals: List[Dict], category: str = "terdekat",
+                               user_location: Dict = None) -> Dict:
+      filtered_hospitals = self.filter_hospitals(hospitals, category, user_location)
+      
+      # Update estimated cost untuk setiap rumah sakit yang difilter
+      for hospital in filtered_hospitals:
+          hospital_id = hospital.get("id")
+          
+          # Hitung cost estimate untuk setiap pemeriksaan
+          total_cost = 0
+          for exam in examinations:
+              # Asumsikan setiap pemeriksaan memiliki disease_id yang sesuai
+              # Ini bisa disesuaikan dengan mapping pemeriksaan ke disease_id
+              disease_id = 1  # Contoh disease_id, sesuaikan dengan kebutuhan
+              
+              cost_estimate_response = requests.post(
+                  "https://api-we-care.vercel.app/api/treatments/cost-estimate",
+                  json={
+                      "diseaseId": disease_id,
+                      "hospitalId": hospital_id
+                  }
+              )
+              
+              if cost_estimate_response.status_code == 200:
+                  cost_data = cost_estimate_response.json()
+                  if cost_data.get("success"):
+                      total_cost += cost_data.get("data", {}).get("costEstimate", 0)
+          
+          hospital["estimated_cost"] = total_cost
+      
+      prompt = self.create_hospital_prompt(main_complaint, examinations, filtered_hospitals, category)
+      
+      try:
+          response = self.llm.invoke(prompt)
+          response_text = response.content if hasattr(response, "content") else str(response)
 
-            # Bersihkan markdown wrapper (```)
-            if response_text.strip().startswith("```json"):
-                response_text = response_text.strip().removeprefix("```json").removesuffix("```").strip()
-            elif response_text.strip().startswith("```"):
-                response_text = response_text.strip().removeprefix("```").removesuffix("```").strip()
+          # Bersihkan markdown wrapper (```)
+          if response_text.strip().startswith("```json"):
+              response_text = response_text.strip().removeprefix("```json").removesuffix("```").strip()
+          elif response_text.strip().startswith("```"):
+              response_text = response_text.strip().removeprefix("```").removesuffix("```").strip()
 
-            # Parse JSON yang sudah dibersihkan
-            return json.loads(response_text)
+          # Parse JSON yang sudah dibersihkan
+          return json.loads(response_text)
 
-        except json.JSONDecodeError:
-            return {
-                "error": "Response dari LLM tidak dapat diubah menjadi JSON.",
-                "raw_response": response_text
-            }
-        except Exception as e:
-            return {
-                "error": f"Gagal memanggil LLM: {str(e)}"
-            }
+      except json.JSONDecodeError:
+          return {
+              "error": "Response dari LLM tidak dapat diubah menjadi JSON.",
+              "raw_response": response_text
+          }
+      except Exception as e:
+          return {
+              "error": f"Gagal memanggil LLM: {str(e)}"
+          }
 
 def main():
     chatbot = HospitalChatbot()
@@ -157,10 +184,45 @@ def main():
   
 def fetch_hospitals_from_api() -> List[Dict]:
     try:
-        response = requests.get("https://api-we-care.vercel.app/api/hospitals")
-        response.raise_for_status()
-        data = response.json()
-        return data.get("data", {}).get("data", [])  # sesuai struktur JSON API kamu
+        # Ambil data rumah sakit
+        hospitals_response = requests.get("https://api-we-care.vercel.app/api/hospitals")
+        hospitals_response.raise_for_status()
+        hospitals_data = hospitals_response.json()
+        hospitals = hospitals_data.get("data", {}).get("data", [])
+
+        # Ambil data penyakit
+        diseases_response = requests.get("https://api-we-care.vercel.app/api/diseases")
+        diseases_response.raise_for_status()
+        diseases_data = diseases_response.json()
+        diseases = diseases_data.get("data", {}).get("data", [])
+
+        # Untuk setiap rumah sakit, hitung estimated cost
+        for hospital in hospitals:
+            hospital_id = hospital.get("id")
+            total_cost = 0
+            
+            # Hitung biaya untuk setiap penyakit
+            for disease in diseases:
+                disease_id = disease.get("id")
+                
+                # Hitung cost estimate untuk kombinasi hospital dan disease
+                cost_estimate_response = requests.post(
+                    "https://api-we-care.vercel.app/api/treatments/cost-estimate",
+                    json={
+                        "diseaseId": disease_id,
+                        "hospitalId": hospital_id
+                    }
+                )
+                
+                if cost_estimate_response.status_code == 200:
+                    cost_data = cost_estimate_response.json()
+                    if cost_data.get("success"):
+                        total_cost += cost_data.get("data", {}).get("costEstimate", 0)
+            
+            # Simpan total cost ke data rumah sakit
+            hospital["estimated_cost"] = total_cost
+
+        return hospitals
     except Exception as e:
         print(f"❌ Gagal ambil data dari API: {str(e)}")
         return []
