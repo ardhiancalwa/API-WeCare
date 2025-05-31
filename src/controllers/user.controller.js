@@ -56,3 +56,21 @@ exports.deleteUser = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateBpjsStatus = async (req, res, next) => {
+  try {
+    const user = await UserService.updateBpjsStatus(req.params.id, req.body);
+    res.json(ApiResponse.success(user, "BPJS status updated successfully"));
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.checkBpjsStatus = async (req, res, next) => {
+  try {
+    const status = await UserService.checkBpjsStatus(req.params.id);
+    res.json(ApiResponse.success(status, "BPJS status retrieved successfully"));
+  } catch (error) {
+    next(error);
+  }
+};

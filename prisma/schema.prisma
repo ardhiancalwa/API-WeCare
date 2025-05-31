@@ -15,23 +15,26 @@ enum UserRole {
 }
 
 model User {
-  id             Int            @id @default(autoincrement())
-  fullName       String
-  phone          String         @unique
-  email          String         @unique
-  provinsi       String
-  kota           String
-  kecamatan      String
-  kodepos        String
-  password       String
-  nik            String?
-  salary         Float?
-  bpjsNumber     String?
-  paylaterStatus Boolean        @default(false)
-  refreshTokens  RefreshToken[]
-  role           UserRole       @default(NON_BPJS)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id              Int            @id @default(autoincrement())
+  fullName        String
+  phone           String         @unique
+  email           String         @unique
+  provinsi        String
+  kota            String
+  kecamatan       String
+  kodepos         String
+  password        String
+  nik             String?
+  salary          Float?
+  bpjsNumber      String?
+  lastPaymentDate DateTime?
+  paylaterStatus  Boolean        @default(false)
+  refreshTokens   RefreshToken[]
+  paylaters       PayLater[]
+  treatments      Treatment[]
+  role            UserRole       @default(NON_BPJS)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model RefreshToken {
@@ -45,14 +48,14 @@ model RefreshToken {
 }
 
 model Hospital {
-  id                    Int        @id @default(autoincrement())
+  id                    Int         @id @default(autoincrement())
   name                  String
   type                  String
   provinsi              String
   kota                  String
   kecamatan             String
   kodepos               String
-  phone                 String     @unique
+  phone                 String      @unique
   image                 String?
   verificationDocuments String?
   services              String[]
@@ -61,19 +64,54 @@ model Hospital {
   offDays               String[]
   holidays              DateTime[]
   diseases              Disease[]
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
+  treatments            Treatment[]
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
 }
 
 model Disease {
-  id         Int      @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   name       String
   type       String
   cost       Float
   hospitalId Int
-  hospital   Hospital @relation(fields: [hospitalId], references: [id])
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  hospital   Hospital    @relation(fields: [hospitalId], references: [id])
+  treatments Treatment[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   @@index([hospitalId])
+}
+
+model PayLater {
+  id         Int         @id @default(autoincrement())
+  amount     Float
+  tenor      Int
+  interest   Float
+  userId     Int
+  approvedAt DateTime?
+  user       User        @relation(fields: [userId], references: [id])
+  treatments Treatment[]
+  status     String      @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+model Treatment {
+  id              Int       @id @default(autoincrement())
+  appointmentDate DateTime
+  userId          Int
+  diseaseId       Int
+  hospitalId      Int
+  payLaterId      Int?
+  status          String    @default("PENDING") // PENDING, ONGOING, COMPLETED, CANCELLED
+  notes           String?
+  user            User      @relation(fields: [userId], references: [id])
+  disease         Disease   @relation(fields: [diseaseId], references: [id])
+  hospital        Hospital  @relation(fields: [hospitalId], references: [id])
+  payLater        PayLater? @relation(fields: [payLaterId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }

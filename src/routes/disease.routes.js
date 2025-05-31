@@ -47,7 +47,6 @@ router.post(
 router.patch(
   "/diseases/:id",
   verifyAccessToken,
-  diseaseValidation,
   validate,
   diseaseController.updateDisease
 );

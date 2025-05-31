@@ -1,7 +1,7 @@
 // src/routes/user.routes.js
 const express = require('express');
 const router = express.Router();
-const { body, query } = require('express-validator');
+const { body, param, query } = require("express-validator");
 const userController = require('../controllers/user.controller');
 const { verifyAccessToken } = require('../middleware/auth.middleware');
 const { validate } = require('../middleware/validation.middleware');
@@ -46,7 +46,7 @@ router.post(
 );
 
 router.patch(
-  '/users/:id',
+  '/user/:id',
   verifyAccessToken,
   userValidation,
   upload.single('identity'), 
@@ -57,6 +57,30 @@ router.delete(
   '/user/:id',
   verifyAccessToken,
   userController.deleteUser
+);
+
+router.put(
+  "/user/:id/bpjs",
+  [
+    param("id").isInt().withMessage("Invalid user ID"),
+    body("bpjsNumber")
+      .optional()
+      .isString()
+      .withMessage("BPJS number must be a string"),
+    body("lastPaymentDate")
+      .optional()
+      .isISO8601()
+      .withMessage("Invalid payment date format"),
+  ],
+  validate,
+  userController.updateBpjsStatus
+);
+
+router.get(
+  "/user/:id/status-bpjs",
+  [param("id").isInt().withMessage("Invalid user ID")],
+  validate,
+  userController.checkBpjsStatus
 );
 
 module.exports = router;

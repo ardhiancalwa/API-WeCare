@@ -96,22 +96,24 @@ class DiseaseService {
       throw new AppError("Disease not found", 404);
     }
 
-    if (diseaseData.hospitalId) {
+    // Prepare update data
+    const updateData = { ...diseaseData };
+
+    // Only check hospital if hospitalId is provided
+    if (updateData.hospitalId) {
       const hospital = await prisma.hospital.findUnique({
-        where: { id: parseInt(diseaseData.hospitalId) },
+        where: { id: parseInt(updateData.hospitalId) },
       });
 
       if (!hospital) {
         throw new AppError("Hospital not found", 404);
       }
+      updateData.hospitalId = parseInt(updateData.hospitalId);
     }
 
     const updatedDisease = await prisma.disease.update({
       where: { id: parseInt(id) },
-      data: {
-        ...diseaseData,
-        hospitalId: diseaseData.hospitalId ? parseInt(diseaseData.hospitalId) : undefined,
-      },
+      data: updateData,
       include: {
         hospital: {
           select: {
