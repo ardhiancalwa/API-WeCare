@@ -26,6 +26,6 @@ const loginValidation = [body("email").isEmail(), body("password").notEmpty()];
 router.post("/register", registerValidation, authController.register);
 router.post("/login", loginValidation, authController.login);
 router.post("/refresh-token", verifyRefreshToken, authController.refreshToken);
-router.post("/logout", authController.logout);
+router.post("/logout", verifyAccessToken, authController.logout);
 
 module.exports = router;

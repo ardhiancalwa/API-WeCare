@@ -2,7 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-const AppError = require("./utils/AppError");
+const moment = require("moment-timezone");
+const { AppError } = require("./utils/errorHandler");
 require("dotenv").config();
 
 const app = express();
@@ -11,9 +12,7 @@ const { errorHandler } = require("./utils/errorHandler");
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 
-const allowedOrigins = [
-  "http://localhost:3000",
-];
+const allowedOrigins = ["http://localhost:3000"];
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -28,10 +27,8 @@ const corsOptions = {
   credentials: true,
 };
 
-
 // Middleware
 app.use(helmet());
-app.use(cors());
 app.use(morgan("dev"));
 app.use(cors(corsOptions));
 
@@ -49,15 +46,24 @@ app.use((req, res, next) => {
   });
   next();
 });
-// Routes
+
+app.use((req, res, next) => {
+  req.localTime = moment().tz("Asia/Jakarta").format();
+  next();
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 
-app.all("*", (req, res, next) => {
-  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+app.get("/", (req, res) => {
+  res.status(404).json({
+    status: "gagal",
+    statusCode: 404,
+    message: "Can't find / on this server!",
+    validation: [],
+  });
 });
 
-// Error handling middleware
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
