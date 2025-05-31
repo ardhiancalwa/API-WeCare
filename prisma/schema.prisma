@@ -15,23 +15,23 @@ enum UserRole {
 }
 
 model User {
-  id              Int       @id @default(autoincrement())
-  fullName        String
-  phone           String    @unique
-  email           String    @unique
-  provinsi        String
-  kota            String
-  kecamatan       String
-  kodepos         String
-  password        String
-  nik             String?   
-  salary          Float?    
-  bpjsNumber      String?   
-  paylaterStatus  Boolean   @default(false)
-  refreshTokens RefreshToken[]
-  role            UserRole  @default(NON_BPJS)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             Int            @id @default(autoincrement())
+  fullName       String
+  phone          String         @unique
+  email          String         @unique
+  provinsi       String
+  kota           String
+  kecamatan      String
+  kodepos        String
+  password       String
+  nik            String?
+  salary         Float?
+  bpjsNumber     String?
+  paylaterStatus Boolean        @default(false)
+  refreshTokens  RefreshToken[]
+  role           UserRole       @default(NON_BPJS)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model RefreshToken {
@@ -43,3 +43,4 @@ model RefreshToken {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+u
