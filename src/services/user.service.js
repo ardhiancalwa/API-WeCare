@@ -153,6 +153,96 @@ class UserService {
 
     return { message: "User deleted successfully" };
   }
+
+  static async updateBpjsStatus(userId, bpjsData) {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+    });
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    let role = "NON_BPJS";
+
+    // Logic untuk menentukan role berdasarkan BPJS
+    if (bpjsData.bpjsNumber) {
+      // Jika memiliki nomor BPJS
+      if (bpjsData.lastPaymentDate) {
+        const today = new Date();
+        const lastPayment = new Date(bpjsData.lastPaymentDate);
+        const monthsDifference =
+          (today.getFullYear() - lastPayment.getFullYear()) * 12 +
+          (today.getMonth() - lastPayment.getMonth());
+
+        // Jika pembayaran terakhir > 1 bulan
+        if (monthsDifference > 1) {
+          role = "NON_ACTIVE_BPJS";
+        } else {
+          role = "BPJS";
+        }
+      } else {
+        // Jika memiliki nomor BPJS tapi belum pernah bayar
+        role = "NON_ACTIVE_BPJS";
+      }
+    } else {
+      // Jika tidak memiliki nomor BPJS
+      role = "NON_BPJS";
+    }
+
+    // Update user dengan role baru
+    const updatedUser = await prisma.user.update({
+      where: { id: parseInt(userId) },
+      data: {
+        bpjsNumber: bpjsData.bpjsNumber,
+        lastPaymentDate: bpjsData.lastPaymentDate,
+        role: role,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        role: true,
+        bpjsNumber: true,
+        lastPaymentDate: true,
+      },
+    });
+
+    return updatedUser;
+  }
+
+  static async checkBpjsStatus(userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+    });
+
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    let status = {
+      hasBpjs: false,
+      isActive: false,
+      role: user.role,
+      lastPaymentDate: user.lastPaymentDate,
+    };
+
+    if (user.bpjsNumber) {
+      status.hasBpjs = true;
+
+      if (user.lastPaymentDate) {
+        const today = new Date();
+        const lastPayment = new Date(user.lastPaymentDate);
+        const monthsDifference =
+          (today.getFullYear() - lastPayment.getFullYear()) * 12 +
+          (today.getMonth() - lastPayment.getMonth());
+
+        status.isActive = monthsDifference <= 1;
+      }
+    }
+
+    return status;
+  }
 }
 
 module.exports = UserService;

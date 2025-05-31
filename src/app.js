@@ -11,6 +11,7 @@ const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const hospitalRoutes = require("./routes/hospital.routes");
 const diseaseRoutes = require("./routes/disease.routes");
+const paylaterRoutes = require("./routes/paylater.routes");
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", hospitalRoutes);
 app.use("/api", diseaseRoutes);
+app.use("/api", paylaterRoutes);
 
 app.get("/", (req, res) => {
   res.status(404).json({
