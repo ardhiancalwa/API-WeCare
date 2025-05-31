@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BPJS
+  NON_BPJS
+  NON_ACTIVE_BPJS
+  HOSPITAL_ADMIN
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  fullName        String
+  phone           String    @unique
+  email           String    @unique
+  provinsi        String
+  kota            String
+  kecamatan       String
+  kodepos         String
+  password        String
+  nik             String?   
+  salary          Float?    
+  bpjsNumber      String?   
+  paylaterStatus  Boolean   @default(false)
+  refreshTokens RefreshToken[]
+  role            UserRole  @default(NON_BPJS)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
