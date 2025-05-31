@@ -10,6 +10,7 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const hospitalRoutes = require("./routes/hospital.routes");
+const diseaseRoutes = require("./routes/disease.routes");
 
 const app = express();
 
@@ -55,6 +56,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", hospitalRoutes);
+app.use("/api", diseaseRoutes);
 
 app.get("/", (req, res) => {
   res.status(404).json({
