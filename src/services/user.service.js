@@ -196,6 +196,7 @@ class UserService {
       data: {
         bpjsNumber: bpjsData.bpjsNumber,
         lastPaymentDate: bpjsData.lastPaymentDate,
+        bpjsArrears: bpjsData.bpjsArrears,
         role: role,
       },
       select: {
@@ -205,6 +206,7 @@ class UserService {
         role: true,
         bpjsNumber: true,
         lastPaymentDate: true,
+        bpjsArrears: true,
       },
     });
 
@@ -225,6 +227,7 @@ class UserService {
       isActive: false,
       role: user.role,
       lastPaymentDate: user.lastPaymentDate,
+      bpjsArrears: user.bpjsArrears,
     };
 
     if (user.bpjsNumber) {

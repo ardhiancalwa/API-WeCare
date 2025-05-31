@@ -15,7 +15,10 @@ const treatmentRoutes = require("./routes/treatment.routes");
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://wecare-vc5w.vercel.app/",
+];
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
