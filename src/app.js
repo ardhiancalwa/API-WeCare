@@ -10,10 +10,29 @@ const { errorHandler } = require("./utils/errorHandler");
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 
+const allowedOrigins = [
+  "http://localhost:3000",
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE, OPTIONS",
+  allowedHeaders: ["Content-Type", "Authorization", "X-Client-Type"],
+  credentials: true,
+};
+
+
 // Middleware
 app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
+app.use(cors(corsOptions));
 
 // Body parser middleware
 app.use(express.json());
