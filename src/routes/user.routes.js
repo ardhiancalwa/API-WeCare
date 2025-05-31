@@ -1,44 +1,58 @@
 // src/routes/user.routes.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const { body, param, query } = require("express-validator");
-const userController = require('../controllers/user.controller');
-const { verifyAccessToken } = require('../middleware/auth.middleware');
-const { validate } = require('../middleware/validation.middleware');
-const { upload } = require('../config/cloudinary');
+const userController = require("../controllers/user.controller");
+const { verifyAccessToken } = require("../middleware/auth.middleware");
+const { validate } = require("../middleware/validation.middleware");
+const { upload } = require("../config/cloudinary");
 
 const paginationValidation = [
-  query('page').optional().isInt({ min: 1 }),
-  query('limit').optional().isInt({ min: 1, max: 100 })
+  query("page").optional().isInt({ min: 1 }),
+  query("limit").optional().isInt({ min: 1, max: 100 }),
 ];
 
 const userValidation = [
-  body('fullName').notEmpty().withMessage('Full name is required'),
-  body('email').isEmail().withMessage('Valid email is required'),
-  body('phone').matches(/^(\+62|62|0)8[1-9][0-9]{6,9}$/).withMessage('Valid phone number is required'),
-  body('provinsi').notEmpty().withMessage('Provinsi is required'),
-  body('kota').notEmpty().withMessage('Kota is required'),
-  body('kecamatan').notEmpty().withMessage('Kecamatan is required'),
-  body('kodepos').notEmpty().withMessage('Kodepos is required'),
-  body('role').optional().isIn(['BPJS', 'NON_BPJS', 'NON_ACTIVE_BPJS', 'HOSPITAL_ADMIN'])
+  body("fullName").notEmpty().withMessage("Full name is required"),
+  body("email").isEmail().withMessage("Valid email is required"),
+  body("phone")
+    .matches(/^(\+62|62|0)8[1-9][0-9]{6,9}$/)
+    .withMessage("Valid phone number is required"),
+  body("provinsi").notEmpty().withMessage("Provinsi is required"),
+  body("kota").notEmpty().withMessage("Kota is required"),
+  body("kecamatan").notEmpty().withMessage("Kecamatan is required"),
+  body("kodepos").notEmpty().withMessage("Kodepos is required"),
+  body("role")
+    .optional()
+    .isIn(["BPJS", "NON_BPJS", "NON_ACTIVE_BPJS", "HOSPITAL_ADMIN"]),
+
+  body("occupation")
+    .optional()
+    .isString()
+    .withMessage("Occupation must be a string"),
+  body("company").optional().isString().withMessage("Company must be a string"),
+  body("salarySlip")
+    .optional()
+    .isString()
+    .withMessage("Salary slip must be a string"),
+  body("bpjsArrears")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("BPJS arrears must be a positive number"),
 ];
 
 router.get(
-  '/users',
+  "/users",
   verifyAccessToken,
   paginationValidation,
   validate,
   userController.getAllUsers
 );
 
-router.get(
-  '/users/:id',
-  verifyAccessToken,
-  userController.getUserById
-);
+router.get("/users/:id", verifyAccessToken, userController.getUserById);
 
 router.post(
-  '/users',
+  "/users",
   verifyAccessToken,
   userValidation,
   validate,
@@ -46,18 +60,17 @@ router.post(
 );
 
 router.patch(
-  '/user/:id',
+  "/user/:id",
   verifyAccessToken,
   userValidation,
-  upload.single('identity'), 
+  upload.fields([
+    { name: 'identity', maxCount: 1 },
+    { name: 'salarySlip', maxCount: 1 }
+  ]),
   userController.updateUser
 );
 
-router.delete(
-  '/user/:id',
-  verifyAccessToken,
-  userController.deleteUser
-);
+router.delete("/user/:id", verifyAccessToken, userController.deleteUser);
 
 router.put(
   "/user/:id/bpjs",

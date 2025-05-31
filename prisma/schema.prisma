@@ -27,7 +27,11 @@ model User {
   nik             String?
   salary          Float?
   bpjsNumber      String?
+  occupation      String?        
+  company         String?        
+  salarySlip      String? 
   lastPaymentDate DateTime?
+  bpjsArrears     Float? 
   paylaterStatus  Boolean        @default(false)
   refreshTokens   RefreshToken[]
   paylaters       PayLater[]
