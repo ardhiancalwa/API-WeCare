@@ -43,3 +43,23 @@ model RefreshToken {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Hospital {
+  id                    Int        @id @default(autoincrement())
+  name                  String
+  type                  String
+  provinsi              String
+  kota                  String
+  kecamatan             String
+  kodepos               String
+  phone                 String     @unique
+  image                 String?
+  verificationDocuments String?
+  services              String[]
+  openTime              String
+  closeTime             String
+  offDays               String[]
+  holidays              DateTime[]
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+}
