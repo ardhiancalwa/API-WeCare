@@ -6,12 +6,12 @@ const moment = require("moment-timezone");
 const { AppError, errorHandler } = require("./utils/errorHandler");
 require("dotenv").config();
 
-
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const hospitalRoutes = require("./routes/hospital.routes");
 const diseaseRoutes = require("./routes/disease.routes");
 const paylaterRoutes = require("./routes/paylater.routes");
+const treatmentRoutes = require("./routes/treatment.routes");
 
 const app = express();
 
@@ -51,14 +51,15 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", hospitalRoutes);
 app.use("/api", diseaseRoutes);
 app.use("/api", paylaterRoutes);
+app.use("/api", treatmentRoutes);
 
 app.get("/", (req, res) => {
   res.status(404).json({
