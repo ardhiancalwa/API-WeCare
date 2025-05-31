@@ -3,17 +3,17 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const moment = require("moment-timezone");
-const { AppError } = require("./utils/errorHandler");
+const { AppError, errorHandler } = require("./utils/errorHandler");
 require("dotenv").config();
+
+
+const authRoutes = require("./routes/auth.routes");
+const userRoutes = require("./routes/user.routes");
+const hospitalRoutes = require("./routes/hospital.routes");
 
 const app = express();
 
-const { errorHandler } = require("./utils/errorHandler");
-const authRoutes = require("./routes/auth.routes");
-const userRoutes = require("./routes/user.routes");
-
 const allowedOrigins = ["http://localhost:3000"];
-
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -27,16 +27,13 @@ const corsOptions = {
   credentials: true,
 };
 
-// Middleware
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(cors(corsOptions));
 
-// Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging middleware
 app.use((req, res, next) => {
   console.log("Incoming request:", {
     method: req.method,
@@ -52,8 +49,12 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
 app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
+app.use("/api", hospitalRoutes);
 
 app.get("/", (req, res) => {
   res.status(404).json({
